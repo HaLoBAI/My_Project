@@ -1,0 +1,46 @@
+# Railway.app 部署配置
+# https://docs.railway.app/deploy/deployments
+
+version: 2
+
+services:
+  product-service:
+    build:
+      context: ./backend/product-service
+      dockerfile: Dockerfile
+    env:
+      SPRING_PROFILES_ACTIVE: production
+      SPRING_DATASOURCE_URL: ${{MySQL.DATABASE_URL}}
+      SPRING_DATASOURCE_USERNAME: ${{MySQL.MYSQL_USER}}
+      SPRING_DATASOURCE_PASSWORD: ${{MySQL.MYSQL_PASSWORD}}
+      SERVER_PORT: 8082
+    healthcheck:
+      path: /actuator/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  ai-service:
+    build:
+      context: ./backend/ai-service
+      dockerfile: Dockerfile
+    env:
+      SPRING_PROFILES_ACTIVE: production
+      SPRING_DATASOURCE_URL: ${{MySQL.DATABASE_URL}}
+      SPRING_DATASOURCE_USERNAME: ${{MySQL.MYSQL_USER}}
+      SPRING_DATASOURCE_PASSWORD: ${{MySQL.MYSQL_PASSWORD}}
+      SERVER_PORT: 8084
+      AI_API_KEY: ${{AI_API_KEY}}
+    healthcheck:
+      path: /actuator/health
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+databases:
+  - name: MySQL
+    image: mysql:8.0
+    env:
+      MYSQL_DATABASE: hair_accessory_db
+      MYSQL_USER: hair_app
+      MYSQL_PASSWORD: ${{MYSQL_PASSWORD}}

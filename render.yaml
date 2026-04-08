@@ -1,0 +1,63 @@
+# Render.com 部署配置文件
+# https://render.com/docs/yaml-spec
+
+services:
+  # Product Service
+  - type: web
+    name: hair-product-service
+    env: java
+    plan: free
+    buildCommand: cd backend/product-service && mvn clean package -DskipTests
+    startCommand: cd backend/product-service && java -jar target/product-service-1.0.0.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: hair-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: hair-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: hair-db
+          property: password
+      - key: SERVER_PORT
+        value: 8082
+    healthCheckPath: /actuator/health
+
+  # AI Service
+  - type: web
+    name: hair-ai-service
+    env: java
+    plan: free
+    buildCommand: cd backend/ai-service && mvn clean package -DskipTests
+    startCommand: cd backend/ai-service && java -jar target/ai-service-1.0.0.jar
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: hair-db
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: hair-db
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: hair-db
+          property: password
+      - key: SERVER_PORT
+        value: 8084
+      - key: AI_API_KEY
+        sync: false # 需要在 Render Dashboard 中手动设置
+    healthCheckPath: /actuator/health
+
+databases:
+  - name: hair-db
+    plan: free
+    databaseName: hair_accessory_db
+    user: hair_app
